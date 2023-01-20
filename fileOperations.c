@@ -1,42 +1,57 @@
 #include "mainHeaders.h"
 
-void copyfile(FILE* src, FILE* dst) {
+void copyfile(char srcp[], char dstp[], int left, int right) {
+    FILE* src = fopen(srcp, "r");
+    FILE* dst = fopen(dstp, "a");
     char c;
-    fseek(src, 0, SEEK_SET);
-    fseek(dst, 0, SEEK_SET);
+    int i = 0;
     while((c = fgetc(src)) != EOF) {
-        fputc(c, dst);
+        if(i >= left && (i < right || right == -1)) {
+            fputc(c, dst);
+        }
+        ++i;
+    }
+    fclose(src);
+    fclose(dst);
+}
+
+void clearfile(char path[]) {
+    fclose(fopen(path, "w"));
+}
+
+void addtofile(char path[], char* str, int pos) {
+    clearfile(TEMP_PATH);
+    copyfile(path, TEMP_PATH, 0, pos);
+    FILE* tmpf = fopen(TEMP_PATH, "a");
+    fprintf(tmpf, "%s", str);
+    fclose(tmpf);
+    copyfile(path, TEMP_PATH, pos, -1);
+    clearfile(path);
+    copyfile(TEMP_PATH, path, 0, -1);
+}
+
+int getpos(char path[], int line, int pos) {
+    FILE* file = fopen(path, "r");
+    if(!file) {
+        return 0;
+    }
+    int ln = 1, ls = 0;
+    char c;
+    for(int i = 0; ; i++) {
+        if(ln == line && ls == pos) {
+            return i;
+        }
+        c = fgetc(file);
+        if(c == EOF) return i;
+        ls++;
+        if(c == '\n') ++ln, ls = 0;
     }
 }
 
-void addtofile(char path[], char* str, int line, int pos) {
-    FILE* file = fopen(path, "r+");
-    if(!file) {
-        puts("File Not Found!");
-        return;
-    }
-    char buff[MAX_STRING_SIZE];
-    FILE* tmpf = fopen(TEMP_PATH, "w+");
-    for(int i = 0; i < line; i++) {
-        fgets(buff, MAX_STRING_SIZE, file);
-        fputs(buff, tmpf);
-    }
-    fgets(buff, MAX_STRING_SIZE, file);
-    int size = strlen(buff);
-    for(int i = 0; i < pos; i++) {
-        if(!buff[i]) break;
-        fputc(buff[i], tmpf);
-    }
-    fprintf(tmpf, "%s", str);
-    for(int i = pos; i < size; i++) {
-        fputc(buff[i], tmpf);
-    }
-    char c;
-    while((c = fgetc(file)) != EOF) {
-        fputc(c, tmpf);
-    }
-    freopen(path, "w", file);
-    copyfile(tmpf, file);
-    fclose(tmpf);
-    fclose(file);
+void removefromfile(char path[], int left, int right) {
+    clearfile(TEMP_PATH);
+    copyfile(path, TEMP_PATH, 0, left);
+    copyfile(path, TEMP_PATH, right, -1);
+    clearfile(path);
+    copyfile(TEMP_PATH, path, 0, -1);
 }

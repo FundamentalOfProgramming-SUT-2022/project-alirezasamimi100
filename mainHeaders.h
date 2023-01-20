@@ -14,6 +14,10 @@
 void executeCommands();
 void getstr(char**, char*);
 void createfile(char**);
-void insertstr(char**);
-void addtofile(char*, char*, int, int);
-void copyfile(FILE*, FILE*);
+void insertstr(char**, char*);
+void addtofile(char*, char*, int);
+void copyfile(char*, char*, int, int);
+void cat(char**, char*);
+int getpos(char*, int, int);
+void removestr(char**);
+void removefromfile(char*, int, int);
