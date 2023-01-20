@@ -22,9 +22,7 @@ void clearfile(char path[]) {
 void addtofile(char path[], char* str, int pos) {
     clearfile(TEMP_PATH);
     copyfile(path, TEMP_PATH, 0, pos);
-    FILE* tmpf = fopen(TEMP_PATH, "a");
-    fprintf(tmpf, "%s", str);
-    fclose(tmpf);
+    strtofile(str, TEMP_PATH);
     copyfile(path, TEMP_PATH, pos, -1);
     clearfile(path);
     copyfile(TEMP_PATH, path, 0, -1);
@@ -54,4 +52,113 @@ void removefromfile(char path[], int left, int right) {
     copyfile(path, TEMP_PATH, right, -1);
     clearfile(path);
     copyfile(TEMP_PATH, path, 0, -1);
+}
+
+void strtofile(char* str, char path[]) {
+    FILE* file = fopen(path, "a");
+    fputs(str, file);
+    fclose(file);
+}
+
+int filesize(char path[]) {
+    int size = 0;
+    FILE* file = fopen(path, "r");
+    while(fgetc(file) != EOF) {
+        ++size;
+    }
+    return size;
+}
+
+void filetostr(char path[], char* str) {
+    char c;
+    FILE* file = fopen(path, "r");
+    while((c = fgetc(file)) != EOF) {
+        *str = c;
+        ++str;
+    }
+    *str = '\0';
+}
+
+void hidefile(char path[], char hidden[]) {
+    int k = strrchr(path, '/') - path + 1;
+    strncpy(hidden, path, k);
+    hidden[k] = '.';
+    strcpy(hidden + k + 1, path + k);
+}
+
+int checkfile(char path[]) {
+    int k = strrchr(path, '/') - path;
+    path[k] = '\0';
+    DIR* dir = opendir(path);
+    path[k] = '/';
+    if(!dir) {
+        puts("Directory Doesn't Exist!");
+        return 1;
+    } else {
+        closedir(dir);
+        FILE* file = fopen(path, "r");
+        if(!file) {
+            puts("File Doesn't Exist!");
+            return 1;
+        } else {
+            fclose(file);
+        }
+    }
+    return 0;
+}
+
+void createbackup(char path[]) {
+    char old[FILE_PATH_SIZE], new[FILE_PATH_SIZE];
+    hidefile(path, old);
+    strcpy(new, old);
+    int size = strlen(old);
+    old[size + 1] = '\0';
+    new[size + 1] = '\0';
+    for(int i = 8; i >= 0; i--) {
+        old[size] = '0' + i;
+        new[size] = '1' + i;
+        FILE* file = fopen(old, "r");
+        if(file) {
+            fclose(file);
+            rename(old, new);
+        }
+    }
+    copyfile(path, old, 0, -1);
+}
+
+void restorebackup(char path[]) {
+    char old[FILE_PATH_SIZE], new[FILE_PATH_SIZE];
+    hidefile(path, old);
+    strcpy(new, old);
+    int size = strlen(old);
+    old[size + 1] = '\0';
+    new[size + 1] = '\0';
+    new[size] = '0';
+    FILE* file = fopen(new, "r");
+    if(file) {
+        fclose(file);
+        rename(new, path);
+    } else {
+        puts("No Actions To Undo!");
+        return;
+    }
+    for(int i = 0; i <= 8; i++) {
+        old[size] = '0' + i;
+        new[size] = '1' + i;
+        FILE* file = fopen(new, "r");
+        if(file) {
+            fclose(file);
+            rename(new, old);
+        } else {
+            break;
+        }
+    }
+}
+
+void printfile(char path[]) {
+    char c;
+    FILE* file = fopen(path, "r");
+    while((c = fgetc(file)) != EOF) {
+        fputc(c, stdout);
+    }
 }

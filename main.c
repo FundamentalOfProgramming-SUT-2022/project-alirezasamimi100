@@ -1,8 +1,6 @@
 #include "mainHeaders.h"
 
 int main() {
-    while(1) {
-        executeCommands();
-    }
+    while(executeCommands());
     return 0;
 }

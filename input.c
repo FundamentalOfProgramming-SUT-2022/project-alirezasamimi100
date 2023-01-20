@@ -1,25 +1,30 @@
 #include "mainHeaders.h"
 
 
-void executeCommands() {
+int executeCommands() {
     char command[MAX_COMMAND_SIZE], func[MAX_COMMAND_SIZE], output[MAX_STRING_SIZE];
-    output[0] = '\0';
+    clearfile(OUTPUT);
     fgets(command, MAX_COMMAND_SIZE, stdin);
     char *ptr = command;
     sscanf(ptr, "%s", func);
     ptr += strlen(func) + 1;
-    if(!strcmp(func, "createfile")) {
+    if(!strcmp(func, "exit")) {
+        return 0;
+    } else if(!strcmp(func, "createfile")) {
         createfile(&ptr);
     } else if(!strcmp(func, "insertstr")) {
         insertstr(&ptr, NULL);
     } else if(!strcmp(func, "cat")) {
-        cat(&ptr, output);
-        printf("%s\n", output);
+        cat(&ptr);
     } else if(!strcmp(func, "removestr")) {
         removestr(&ptr);
+    } else if(!strcmp(func, "undo")) {
+        undo(&ptr);
     } else {
         puts("Invalid Command!");
     }
+    printfile(OUTPUT);
+    return 1;
 }
 
 void getstr(char** sptr, char* str) {

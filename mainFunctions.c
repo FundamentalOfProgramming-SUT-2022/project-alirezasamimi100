@@ -46,28 +46,25 @@ void insertstr(char** sptr, char* pipeString) {
     sscanf(ptr, "--pos %d:%d%n", &line, &pos, &offset);
     ptr += offset;
     *sptr = ptr;
+    if(checkfile(path + 1)) {
+        return;
+    }
+    createbackup(path + 1);
     addtofile(path + 1, pipeString, getpos(path + 1, line, pos));
 
 }
 
-void cat(char** sptr, char* output) {
+void cat(char** sptr) {
     char* ptr = *sptr;
     char path[FILE_PATH_SIZE];
     while(*ptr != '-') ++ptr;
     ptr += 7;
     getstr(&ptr, path);
     *sptr = ptr;
-    FILE* file = fopen(path + 1, "r");
-    if(!file) {
-        puts("File Not Found!");
-    } else {
-        char c;
-        while((c = fgetc(file)) != EOF) {
-            *output = c;
-            ++output;
-        }
-        *output = '\0';
+    if(checkfile(path + 1)) {
+        return;
     }
+    copyfile(path + 1, OUTPUT, 0, -1);
 }
 
 void removestr(char** sptr) {
@@ -84,6 +81,10 @@ void removestr(char** sptr) {
     sscanf(ptr, "-size %d%n", &size, &t);
     ptr += t;
     while(*ptr != '-') ++ptr;
+    *sptr = ptr + 2;
+    if(checkfile(path + 1)) {
+        return;
+    }
     if(*(ptr + 1) == 'f') {
         left = getpos(path + 1, line, pos);
         right = left + size;
@@ -91,6 +92,19 @@ void removestr(char** sptr) {
         right = getpos(path + 1, line, pos);
         left = right - size;
     }
-    *sptr = ptr + 2;
+    createbackup(path + 1);
     removefromfile(path + 1, left, right);
+}
+
+void undo(char** sptr) {
+    char* ptr = *sptr;
+    char path[FILE_PATH_SIZE];
+    while(*ptr != '-') ++ptr;
+    ptr += 7;
+    getstr(&ptr, path);
+    *sptr = ptr;
+    if(checkfile(path + 1)) {
+        return;
+    }
+    restorebackup(path + 1);
 }
