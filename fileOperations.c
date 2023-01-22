@@ -28,6 +28,15 @@ void addtofile(char path[], char* str, int pos) {
     copyfile(TEMP_PATH, path, 0, -1);
 }
 
+void faddtofile(char path[], char fstr[], int pos) {
+    clearfile(TEMP_PATH);
+    copyfile(path, TEMP_PATH, 0, pos);
+    copyfile(fstr, TEMP_PATH, 0, -1);;
+    copyfile(path, TEMP_PATH, pos, -1);
+    clearfile(path);
+    copyfile(TEMP_PATH, path, 0, -1);
+}
+
 int getpos(char path[], int line, int pos) {
     FILE* file = fopen(path, "r");
     if(!file) {
@@ -161,4 +170,56 @@ void printfile(char path[]) {
     while((c = fgetc(file)) != EOF) {
         fputc(c, stdout);
     }
+}
+
+struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards) {
+    struct match *ans = malloc(sizeof(struct match)), *now = ans;
+    ans->left = -1;
+    int nfa[MAX_STRING_SIZE], wild[MAX_STRING_SIZE], wfa[MAX_STRING_SIZE], sz = strlen(ptrn);
+    memset(wild, 0, sizeof(wild));
+    memset(nfa, -1, sizeof(nfa));
+    while(wcards && wcards->pos != -1) {
+        wild[wcards->pos] = 1;
+        struct wildcard* tmp = wcards->next;
+        free(wcards);
+        wcards = tmp;
+    }
+    free(wcards);
+    FILE* file = fopen(path, "r");
+    char c = fgetc(file);
+    int wn = 0, ls = 1, i = 0;
+    for(; c != EOF; i++) {
+        if(c != ' ' && c != '\n') {
+            wn += ls;
+            ls = 0;
+        }else {
+            ls = 1;
+        }
+        if(nfa[sz] != -1 && (!wild[sz - 1] || c == ' ' || c == '\n')) {
+            now->left = nfa[sz];
+            now->right = i;
+            now->word = wfa[sz];
+            now->next = malloc(sizeof(struct match));
+            now = now->next;
+            now->left = -1;
+            memset(nfa, -1, sizeof(nfa));
+        }
+        nfa[0] = i;
+        wfa[0] = wn;
+        for(int j = sz; j; j--) {
+            if(nfa[j] != -1 && wild[j - 1] && c != ' ' && c != '\n') continue;
+            nfa[j] = -1;
+            if(nfa[j - 1] != -1 && (c == ptrn[j - 1] || wild[j - 1] && c != ' ' && c != '\n')) nfa[j] = nfa[j - 1], wfa[j] = wfa[j - 1];
+        }
+        c = fgetc(file);
+    }
+    if(nfa[sz] != -1) {
+        now->left = nfa[sz];
+        now->right = i;
+        now->word = wfa[sz];
+        now->next = malloc(sizeof(struct match));
+        now = now->next;
+        now->left = -1;
+    }
+    return ans;
 }

@@ -13,14 +13,24 @@
 #define CLIPBOARD "root/.clipboard"
 #define OUTPUT "root/.output"
 
+struct wildcard {
+    int pos;
+    struct wildcard* next;
+};
+struct match {
+    int left, right, word;
+    struct match* next;
+};
+
 int executeCommands();
-void getstr(char** sptr, char* str);
+struct wildcard* getstr(char** sptr, char* str, int find);
 void createfile(char** sptr);
 void insertstr(char** sptr, char* pipeString);
 void addtofile(char path[], char* str, int pos);
+void faddtofile(char path[], char fstr[], int pos);
 void copyfile(char src[], char dst[], int left, int right);
 void cat(char** sptr);
-int getpos(char* path, int line, int pos);
+int getpos(char path[], int line, int pos);
 void removestr(char** sptr);
 void removefromfile(char path[], int left, int right);
 int filesize(char path[]);
@@ -33,3 +43,8 @@ void clearfile(char path[]);
 void restorebackup(char path[]);
 void undo(char** sptr);
 void printfile(char path[]);
+void copy(char** sptr);
+void cut(char** sptr);
+void paste(char** sptr);
+struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards);
+void find(char** sptr, char* pipeString);

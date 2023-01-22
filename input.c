@@ -20,6 +20,14 @@ int executeCommands() {
         removestr(&ptr);
     } else if(!strcmp(func, "undo")) {
         undo(&ptr);
+    } else if(!strcmp(func, "copy")) {
+        copy(&ptr);
+    } else if(!strcmp(func, "cut")) {
+        cut(&ptr);
+    } else if(!strcmp(func, "paste")) {
+        paste(&ptr);
+    } else if(!strcmp(func, "find")) {
+        find(&ptr, NULL);
     } else {
         puts("Invalid Command!");
     }
@@ -27,11 +35,18 @@ int executeCommands() {
     return 1;
 }
 
-void getstr(char** sptr, char* str) {
+struct wildcard* getstr(char** sptr, char* str, int find) {
+    struct wildcard *ans = NULL, *now = NULL;
+    if(find) {
+        ans = malloc(sizeof(struct wildcard));
+        ans->pos = -1;
+        now = ans;
+    }
     const char end[] = {' ', '\"'};
     char* ptr = *sptr;
     int mode = 0, bs = 0;
     if(*ptr == '\"') mode = 1, ++ptr;
+    int i = 0;
     while(*ptr != end[mode] && *ptr != '\n' && *ptr != '\0') {
         if(bs) {
             bs = 0;
@@ -41,16 +56,26 @@ void getstr(char** sptr, char* str) {
                 *str = *ptr;
             }
             ++str;
+            ++i;
         } else {
             if(*ptr == '\\') {
                 bs = 1;
             } else {
+                if(find && *ptr == '*') {
+                    now->pos = i;
+                    now->next = malloc(sizeof(struct wildcard));
+                    now = now->next;
+                    now->pos = -1;
+                }
                 *str = *ptr;
                 ++str;
+                ++i;
             }
         }
         ++ptr;
     }
     *str = '\0';
+    if(*ptr == end[mode]) ++ptr;
     *sptr = ptr;
+    return ans;
 }
