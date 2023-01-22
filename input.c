@@ -37,6 +37,8 @@ int executeCommands() {
             tree(&ptr);
         } else if(!strcmp(func, "auto-indent")) {
             autoindent(&ptr);
+        } else if(!strcmp(func, "compare")) {
+            compare(&ptr);
         } else {
             puts("Invalid Command!");
         }

@@ -8,7 +8,7 @@
 
 #define MAX_COMMAND_SIZE 1024
 #define FILE_PATH_SIZE 1024
-#define MAX_STRING_SIZE 1024
+#define MAX_STRING_SIZE 1024 * 1024
 #define TEMP_PATH "root/.temp"
 #define CLIPBOARD "root/.clipboard"
 #define OUTPUT "root/.output"
@@ -55,3 +55,4 @@ void grep(char** sptr, char* pipeString);
 void tree(char** sptr);
 void prtree(char path[], int depth, int pre);
 void autoindent(char** sptr);
+void compare(char** sptr);

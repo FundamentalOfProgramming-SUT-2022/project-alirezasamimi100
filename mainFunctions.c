@@ -487,3 +487,95 @@ void autoindent(char** sptr) {
     clearfile(path + 1);
     copyfile(TEMP_PATH, path + 1, 0, -1);
 }
+
+void compare(char** sptr) {
+    char* ptr = *sptr, path1[FILE_PATH_SIZE], path2[FILE_PATH_SIZE], str1[MAX_STRING_SIZE], str2[MAX_STRING_SIZE];
+    getstr(&ptr, path1, 0);
+    getstr(&ptr, path2, 0);
+    *sptr = ptr;
+    if(checkfile(path1 + 1) || checkfile(path2 + 1)) {
+        return;
+    }
+    FILE *file1 = fopen(path1 + 1, "r"), *file2 = fopen(path2 + 1, "r"), *out = fopen(OUTPUT, "w");
+    int ln = 0, kn, L = 0, R = 0;
+    while(fgets(str1, MAX_STRING_SIZE, file1) && fgets(str2, MAX_STRING_SIZE, file2)) {
+        if(str1[strlen(str1) - 1] != '\n') strcpy(str1 + strlen(str1), "\n");
+        if(str2[strlen(str2) - 1] != '\n') strcpy(str2 + strlen(str2), "\n");
+        int l = -1, sp = 0, ls = strlen(str1), rs = strlen(str2), sz = ls, ol = 1;
+        if(rs > sz) sz = rs;
+        for(int i = 0; i < sz; i++) {
+            if(i < ls && i < rs) {
+                if(str1[i] != str2[i]) {
+                    if(l == -1) l = i;
+                }
+            } else {
+                if(l == -1) l = i;
+            }
+            if(l != -1 && (i < ls && str1[i] == ' ' || i < rs && str2[i] == ' ')) {
+                sp = 1;
+            }
+            if(i < ls && i < rs) {
+                if(str1[i] != str2[i]) {
+                    if(sp) ol = 0;
+                }
+            } else {
+                if(sp) ol = 0;
+            }
+        }
+        ln++;
+        if(l == -1) continue;
+        fprintf(out, "============ #%d ============\n", ln);
+        if(!ol) {
+            fputs(str1, out);
+            fputs(str2, out);
+        } else {
+            int i = 0;
+            char* st = strrchr(str1 + l, ' ');
+            if(!st) l = 0;
+            else l = st - str1 + 1;
+            for(; i < l; i++) fputc(str1[i], out);
+            fputs(">>", out);
+            for(; str1[i] != ' ' && str1[i] != '\n'; i++) fputc(str1[i], out);
+            fputs("<<", out);
+            fputs(str1 + i, out);
+            i = 0;
+            for(; i < l; i++) fputc(str2[i], out);
+            fputs(">>", out);
+            for(; str2[i] != ' ' && str2[i] != '\n'; i++) fputc(str2[i], out);
+            fputs("<<", out);
+            fputs(str2 + i, out);
+        }
+    }
+    kn = ln;
+    freopen(path1 + 1, "r", file1);
+    freopen(path2 + 1, "r", file2);
+    for(int i = 0; i < ln; i++) {
+        fgets(str1, MAX_STRING_SIZE, file1);
+        fgets(str2, MAX_STRING_SIZE, file2);
+    }
+    FILE* tmp = fopen(TEMP_PATH, "w");
+    while(fgets(str1, MAX_STRING_SIZE, file1)) {
+        L = 1;
+        kn++;
+        if(str1[strlen(str1) - 1] != '\n') strcpy(str1 + strlen(str1), "\n");
+        fputs(str1, tmp);
+    }
+    while(fgets(str2, MAX_STRING_SIZE, file2)) {
+        R = 1;
+        kn++;
+        if(str2[strlen(str2) - 1] != '\n') strcpy(str2 + strlen(str2), "\n");
+        fputs(str2, tmp);
+    }
+    fclose(tmp);
+    if(L) {
+        fprintf(out, "<<<<<<<<<<<< #%d - #%d <<<<<<<<<<<<\n", ln + 1, kn);
+        fclose(out);
+        copyfile(TEMP_PATH, OUTPUT, 0, -1);
+    } else if(R) {
+        fprintf(out, ">>>>>>>>>>>> #%d - #%d >>>>>>>>>>>>\n", ln + 1, kn);
+        fclose(out);
+        copyfile(TEMP_PATH, OUTPUT, 0, -1);
+    } else {
+        fclose(out);
+    }
+}
