@@ -172,7 +172,7 @@ void printfile(char path[]) {
     }
 }
 
-struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards) {
+struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards, int del) {
     struct match *ans = malloc(sizeof(struct match)), *now = ans;
     ans->left = -1;
     int nfa[MAX_STRING_SIZE], wild[MAX_STRING_SIZE], wfa[MAX_STRING_SIZE], sz = strlen(ptrn);
@@ -181,10 +181,10 @@ struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards) {
     while(wcards && wcards->pos != -1) {
         wild[wcards->pos] = 1;
         struct wildcard* tmp = wcards->next;
-        free(wcards);
+        if(del) free(wcards);
         wcards = tmp;
     }
-    free(wcards);
+    if(del) free(wcards);
     FILE* file = fopen(path, "r");
     char c = fgetc(file);
     int wn = 0, ls = 1, i = 0;
@@ -222,4 +222,35 @@ struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards) {
         now->left = -1;
     }
     return ans;
+}
+
+void prtree(char path[], int depth, int pre) {
+    DIR* dir = opendir(path);
+    struct dirent *file;
+    FILE* out = fopen(OUTPUT, "a");
+    char *name = strrchr(path, '/');
+    for(int i = 0; i < pre; i++) fputc('-', out);
+    if(!name) {
+        fprintf(out, "%s:\n", path);
+    } else {
+        fprintf(out, "%s:\n", name + 1);
+    }
+    if(!depth) return;
+    while(file = readdir(dir)) {
+        if(file->d_name[0] == '.') continue;
+        if(file->d_type == DT_REG) {
+            for(int i = 0; i <= pre; i++) fputc('-', out);
+            fprintf(out, "%s\n", file->d_name);
+        } else if(file->d_type == DT_DIR) {
+            char newpath[FILE_PATH_SIZE];
+            strcpy(newpath, path);
+            strcpy(newpath + strlen(newpath), "/");
+            strcpy(newpath + strlen(newpath), file->d_name);
+            fclose(out);
+            prtree(newpath, depth - 1, pre + 1);
+            out = fopen(OUTPUT, "a");
+        }
+    }
+    fclose(out);
+    closedir(dir);
 }

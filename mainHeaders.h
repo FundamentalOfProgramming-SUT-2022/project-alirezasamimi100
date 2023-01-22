@@ -12,6 +12,8 @@
 #define TEMP_PATH "root/.temp"
 #define CLIPBOARD "root/.clipboard"
 #define OUTPUT "root/.output"
+#define BASE "root"
+#define TABSIZE 4
 
 struct wildcard {
     int pos;
@@ -46,5 +48,10 @@ void printfile(char path[]);
 void copy(char** sptr);
 void cut(char** sptr);
 void paste(char** sptr);
-struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards);
+struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards, int del);
 void find(char** sptr, char* pipeString);
+void replace(char** sptr);
+void grep(char** sptr, char* pipeString);
+void tree(char** sptr);
+void prtree(char path[], int depth, int pre);
+void autoindent(char** sptr);
