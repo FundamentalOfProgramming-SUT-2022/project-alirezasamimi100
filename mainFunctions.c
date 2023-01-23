@@ -489,7 +489,8 @@ void autoindent(char** sptr) {
 }
 
 void compare(char** sptr) {
-    char* ptr = *sptr, path1[FILE_PATH_SIZE], path2[FILE_PATH_SIZE], str1[MAX_STRING_SIZE], str2[MAX_STRING_SIZE];
+    char* ptr = *sptr, path1[FILE_PATH_SIZE], path2[FILE_PATH_SIZE], str1[MAX_STRING_SIZE], str2[MAX_STRING_SIZE],
+                        wtf1[MAX_STRING_SIZE], wtf2[MAX_STRING_SIZE];
     getstr(&ptr, path1, 0);
     getstr(&ptr, path2, 0);
     *sptr = ptr;
@@ -501,49 +502,77 @@ void compare(char** sptr) {
     while(fgets(str1, MAX_STRING_SIZE, file1) && fgets(str2, MAX_STRING_SIZE, file2)) {
         if(str1[strlen(str1) - 1] != '\n') strcpy(str1 + strlen(str1), "\n");
         if(str2[strlen(str2) - 1] != '\n') strcpy(str2 + strlen(str2), "\n");
-        int l = -1, sp = 0, ls = strlen(str1), rs = strlen(str2), sz = ls, ol = 1;
-        if(rs > sz) sz = rs;
-        for(int i = 0; i < sz; i++) {
-            if(i < ls && i < rs) {
-                if(str1[i] != str2[i]) {
-                    if(l == -1) l = i;
+        int dif = 0, wn = 0, k = 0;
+        char *w1 = str1, *w2 = str2;
+        while(1) {
+            ++wn;
+            while(*w1 == ' ') ++w1;
+            while(*w2 == ' ') ++w2;
+            if(*w1 == '\n' || *w2 == '\n'){
+                if(*w1 != '\n' || *w2 != '\n') dif = 2;
+                break;
+            }
+            while(*w1 != ' ' && *w2 != ' ' && *w1 != '\n' && *w2 != '\n') {
+                if(*w1 != *w2) {
+                    k = wn;
                 }
-            } else {
-                if(l == -1) l = i;
+                ++w1;
+                ++w2;
             }
-            if(l != -1 && (i < ls && str1[i] == ' ' || i < rs && str2[i] == ' ')) {
-                sp = 1;
-            }
-            if(i < ls && i < rs) {
-                if(str1[i] != str2[i]) {
-                    if(sp) ol = 0;
-                }
-            } else {
-                if(sp) ol = 0;
-            }
+            while(*w1 != ' ' && *w1 != '\n') k = wn, ++w1;
+            while(*w2 != ' ' && *w2 != '\n') k = wn, ++w2;
+            if(k == wn) ++dif;
+
         }
         ln++;
-        if(l == -1) continue;
+        if(!dif) continue;
         fprintf(out, "============ #%d ============\n", ln);
-        if(!ol) {
+        if(dif == 1) {
+            int lp = 1;
+            wn = 0;
+            w1 = str1;
+            w2 = str2;
+            while(*w1 != '\n') {
+                if(*w1 == ' ') {
+                    if(!lp) {
+                        if(wn == k) fputs("<<", out);
+                    }
+                    lp = 1;
+                } else {
+                    if(lp) {
+                        ++wn;
+                        if(wn == k) fputs(">>", out);
+                    }
+                    lp = 0;
+                }
+                fputc(*w1, out);
+                ++w1;
+            }
+            if(wn == k) fputs("<<", out);
+            wn = 0;
+            lp = 1;
+            fputc('\n', out);
+            while(*w2 != '\n') {
+                if(*w2 == ' ') {
+                    if(!lp) {
+                        if(wn == k) fputs("<<", out);
+                    }
+                    lp = 1;
+                } else {
+                    if(lp) {
+                        ++wn;
+                        if(wn == k) fputs(">>", out);
+                    }
+                    lp = 0;
+                }
+                fputc(*w2, out);
+                ++w2;
+            }
+            if(wn == k) fputs("<<", out);
+            fputc('\n', out);
+        } else {
             fputs(str1, out);
             fputs(str2, out);
-        } else {
-            int i = 0;
-            char* st = strrchr(str1 + l, ' ');
-            if(!st) l = 0;
-            else l = st - str1 + 1;
-            for(; i < l; i++) fputc(str1[i], out);
-            fputs(">>", out);
-            for(; str1[i] != ' ' && str1[i] != '\n'; i++) fputc(str1[i], out);
-            fputs("<<", out);
-            fputs(str1 + i, out);
-            i = 0;
-            for(; i < l; i++) fputc(str2[i], out);
-            fputs(">>", out);
-            for(; str2[i] != ' ' && str2[i] != '\n'; i++) fputc(str2[i], out);
-            fputs("<<", out);
-            fputs(str2 + i, out);
         }
     }
     kn = ln;
