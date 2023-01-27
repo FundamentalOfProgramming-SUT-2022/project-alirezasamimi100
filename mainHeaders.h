@@ -8,7 +8,7 @@
 
 #define MAX_COMMAND_SIZE 1024
 #define FILE_PATH_SIZE 1024
-#define MAX_STRING_SIZE 1024 * 1024
+#define MAX_STRING_SIZE 1024 * 256
 #define TEMP_PATH "root/.temp"
 #define CLIPBOARD "root/.clipboard"
 #define OUTPUT "root/.output"

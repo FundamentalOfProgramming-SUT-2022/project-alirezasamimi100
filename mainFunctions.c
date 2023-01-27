@@ -261,7 +261,7 @@ void find(char** sptr, char* pipeString) {
             } else if(!at) {
                 if(k > 1) fprintf(file, ", ");
                 if(bw) fprintf(file, "%d", ans->word);
-                else fprintf(file, "%d %d", ans->left);
+                else fprintf(file, "%d", ans->left);
             }
         }
         struct match* tmp = ans->next;

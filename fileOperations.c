@@ -206,10 +206,20 @@ struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards, int 
         }
         nfa[0] = i;
         wfa[0] = wn;
+        for(int j = 1; nfa[j] == -1 && wild[j - 1]; j++) {
+            nfa[j] = i;
+            wfa[j] = wn;
+        }
         for(int j = sz; j; j--) {
             if(nfa[j] != -1 && wild[j - 1] && c != ' ' && c != '\n') continue;
             nfa[j] = -1;
-            if(nfa[j - 1] != -1 && (c == ptrn[j - 1] || wild[j - 1] && c != ' ' && c != '\n')) nfa[j] = nfa[j - 1], wfa[j] = wfa[j - 1];
+            if(nfa[j - 1] != -1 && (c == ptrn[j - 1] || (wild[j - 1] && c != ' ' && c != '\n'))) nfa[j] = nfa[j - 1], wfa[j] = wfa[j - 1];
+            if(nfa[j] != -1) {
+                for(int k = j + 1; nfa[k] == -1 && wild[k - 1]; k++) {
+                    nfa[k] = nfa[j];
+                    wfa[k] = wfa[j];
+                }
+            }
         }
         c = fgetc(file);
     }
