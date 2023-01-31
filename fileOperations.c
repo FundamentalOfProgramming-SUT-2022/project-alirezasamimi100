@@ -42,7 +42,7 @@ int getpos(char path[], int line, int pos) {
     if(!file) {
         return 0;
     }
-    int ln = 1, ls = 0;
+    int ln = 0, ls = 0;
     char c;
     for(int i = 0; ; i++) {
         if(ln == line && ls == pos) {
@@ -263,4 +263,28 @@ void prtree(char path[], int depth, int pre) {
     }
     fclose(out);
     closedir(dir);
+}
+
+int getlinecount(char path[]) {
+    FILE* file = fopen(path, "r");
+    int ans = 0;
+    char c;
+    while((c = fgetc(file)) != EOF) {
+        if(c == '\n') ++ans;
+    }
+    fclose(file);
+    return ans;
+}
+
+int getcharcount(char path[], int line) {
+    FILE* file = fopen(path, "r");
+    int ans = 0;
+    char str[MAX_STRING_SIZE], c;
+    for(int i = 0; i < line; i++) fgets(str, MAX_STRING_SIZE, file);
+    while((c = fgetc(file)) != EOF) {
+        if(c == '\n') break;
+        ++ans;
+    }
+    fclose(file);
+    return ans;
 }

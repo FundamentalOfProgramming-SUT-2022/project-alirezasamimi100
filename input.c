@@ -53,7 +53,7 @@ int executeCommands() {
     return 1;
 }
 
-struct wildcard* getstr(char** sptr, char* str, int find) {
+struct wildcard* getinstr(char** sptr, char* str, int find) {
     struct wildcard *ans = NULL, *now = NULL;
     if(find) {
         ans = malloc(sizeof(struct wildcard));

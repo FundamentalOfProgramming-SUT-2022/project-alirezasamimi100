@@ -35,16 +35,17 @@ void insertstr(char** sptr, char* pipeString) {
     char path[FILE_PATH_SIZE], str[MAX_STRING_SIZE];
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     while(*ptr == ' ') ++ptr;
     if(!pipeString) {
         ptr += 6;
-        getstr(&ptr, str, 0);
+        getinstr(&ptr, str, 0);
         pipeString = str;
     }
     int line, pos, offset;
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "--pos %d:%d%n", &line, &pos, &offset);
+    --line;
     ptr += offset;
     *sptr = ptr;
     if(checkfile(path + 1)) {
@@ -60,7 +61,7 @@ void cat(char** sptr) {
     char path[FILE_PATH_SIZE];
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     *sptr = ptr;
     if(checkfile(path + 1)) {
         return;
@@ -74,9 +75,10 @@ void removestr(char** sptr) {
     int t, size, line, pos, left, right;
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "--pos %d:%d%n", &line, &pos, &t);
+    --line;
     ptr += t;
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "-size %d%n", &size, &t);
@@ -102,7 +104,7 @@ void undo(char** sptr) {
     char path[FILE_PATH_SIZE];
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     *sptr = ptr;
     if(checkfile(path + 1)) {
         return;
@@ -116,9 +118,10 @@ void copy(char** sptr) {
     int t, size, line, pos, left, right;
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "--pos %d:%d%n", &line, &pos, &t);
+    --line;
     ptr += t;
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "-size %d%n", &size, &t);
@@ -145,9 +148,10 @@ void cut(char** sptr) {
     int t, size, line, pos, left, right;
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "--pos %d:%d%n", &line, &pos, &t);
+    --line;
     ptr += t;
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "-size %d%n", &size, &t);
@@ -175,10 +179,11 @@ void paste(char** sptr) {
     char path[FILE_PATH_SIZE];
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     int line, pos, offset;
     while(*ptr == ' ') ++ptr;
     sscanf(ptr, "--pos %d:%d%n", &line, &pos, &offset);
+    --line;
     ptr += offset;
     *sptr = ptr;
     if(checkfile(path + 1)) {
@@ -196,12 +201,12 @@ void find(char** sptr, char* pipeString) {
     while(*ptr == ' ') ++ptr;
     if(!pipeString) {
         ptr += 6;
-        wcards = getstr(&ptr, str, 1);
+        wcards = getinstr(&ptr, str, 1);
         pipeString = str;
     }
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     while(*ptr == ' ') ++ptr;
     int k;
     if(*ptr == '-') {
@@ -283,13 +288,13 @@ void replace(char** sptr) {
     int at = 1, bw = 0, cnt = 0, er = 0;
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    wcards = getstr(&ptr, str1, 1);
+    wcards = getinstr(&ptr, str1, 1);
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, str2, 0);
+    getinstr(&ptr, str2, 0);
     while(*ptr == ' ') ++ptr;
     ptr += 7;
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     while(*ptr == ' ') ++ptr;
     int k;
     if(*ptr == '-') {
@@ -360,7 +365,7 @@ void grep(char** sptr, char* pipeString) {
     if(!pipeString){
         while(*ptr == ' ') ++ptr;
         ptr += 6;
-        wcards = getstr(&ptr, str, 1);
+        wcards = getinstr(&ptr, str, 1);
         pipeString = str;
     }
     while(*ptr == ' ') ++ptr;
@@ -369,7 +374,7 @@ void grep(char** sptr, char* pipeString) {
     FILE* out = fopen(OUTPUT, "w");
     FILE* tpf = fopen(TEMP_PATH, "w");
     while(*ptr != ' ' && *ptr != '\n' && *ptr != '\0' && *ptr != '=') {
-        getstr(&ptr, path, 0);
+        getinstr(&ptr, path, 0);
         if(checkfile(path + 1)) continue;
         struct match* ans = findinfile(path + 1, pipeString, wcards, 0);
         int fm = 0, mk = 0, i = 0;
@@ -439,7 +444,7 @@ void tree(char** sptr) {
 
 void autoindent(char** sptr) {
     char *ptr = *sptr, path[FILE_PATH_SIZE];
-    getstr(&ptr, path, 0);
+    getinstr(&ptr, path, 0);
     *sptr = ptr;
     if(checkfile(path + 1)) {
         return;
@@ -491,8 +496,8 @@ void autoindent(char** sptr) {
 void compare(char** sptr) {
     char* ptr = *sptr, path1[FILE_PATH_SIZE], path2[FILE_PATH_SIZE], str1[MAX_STRING_SIZE], str2[MAX_STRING_SIZE],
                         wtf1[MAX_STRING_SIZE], wtf2[MAX_STRING_SIZE];
-    getstr(&ptr, path1, 0);
-    getstr(&ptr, path2, 0);
+    getinstr(&ptr, path1, 0);
+    getinstr(&ptr, path2, 0);
     *sptr = ptr;
     if(checkfile(path1 + 1) || checkfile(path2 + 1)) {
         return;

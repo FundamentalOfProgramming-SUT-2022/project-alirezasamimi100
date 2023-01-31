@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
+#include <ncurses.h>
 
 #define MAX_COMMAND_SIZE 1024
 #define FILE_PATH_SIZE 1024
@@ -13,6 +14,7 @@
 #define CLIPBOARD "root/.clipboard"
 #define OUTPUT "root/.output"
 #define BASE "root"
+#define OPEN_FILE "root/.open"
 #define TABSIZE 4
 
 struct wildcard {
@@ -25,7 +27,7 @@ struct match {
 };
 
 int executeCommands();
-struct wildcard* getstr(char** sptr, char* str, int find);
+struct wildcard* getinstr(char** sptr, char* str, int find);
 void createfile(char** sptr);
 void insertstr(char** sptr, char* pipeString);
 void addtofile(char path[], char* str, int pos);
@@ -56,3 +58,5 @@ void tree(char** sptr);
 void prtree(char path[], int depth, int pre);
 void autoindent(char** sptr);
 void compare(char** sptr);
+int getlinecount(char path[]);
+int getcharcount(char path[], int line);
