@@ -24,7 +24,7 @@ void createfile(char** sptr) {
     if(!file) {
         file = fopen(path, "w");
     } else {
-        puts("File Already Exists!");
+        reterr("File Already Exists!");
     }
     fclose(file);
     *sptr = ptr;
@@ -251,7 +251,7 @@ void find(char** sptr, char* pipeString) {
         return;
     }
     if(er > 1 || (cnt && bw)) {
-        puts("Invalid Arguments!");
+        reterr("Invalid Arguments!");
         return;
     }
     k = 0;
@@ -281,9 +281,11 @@ void find(char** sptr, char* pipeString) {
     fclose(file);
 }
 
-void replace(char** sptr) {
+int replace(char** sptr) {
+    int komak = -1;
     char* ptr = *sptr;
     char path[FILE_PATH_SIZE], str1[MAX_STRING_SIZE], str2[MAX_STRING_SIZE];
+    strcpy(path, SLOPEN_FILE);
     struct wildcard* wcards = NULL;
     int at = 1, bw = 0, cnt = 0, er = 0;
     while(*ptr == ' ') ++ptr;
@@ -293,8 +295,11 @@ void replace(char** sptr) {
     ptr += 7;
     getinstr(&ptr, str2, 0);
     while(*ptr == ' ') ++ptr;
-    ptr += 7;
-    getinstr(&ptr, path, 0);
+    if(*ptr == '-' && *(ptr + 1) == '-') {
+        ptr += 7;
+        komak = -2;
+        getinstr(&ptr, path, 0);
+    }
     while(*ptr == ' ') ++ptr;
     int k;
     if(*ptr == '-') {
@@ -322,11 +327,11 @@ void replace(char** sptr) {
     }
     *sptr = ptr;
     if(checkfile(path + 1)) {
-        return;
+        return -1;
     }
     if(er > 1 || (cnt && bw)) {
-        puts("Invalid Arguments!");
-        return;
+        reterr("Invalid Arguments!");
+        return -1;
     }
     k = 0;
     int ls = 0;
@@ -336,6 +341,9 @@ void replace(char** sptr) {
     while(ans->left != -1) {
         k++;
         if(at == k || !at) {
+            if(komak == -1) {
+                komak = ans->left;
+            }
             copyfile(path + 1, TEMP_PATH, ls, ans->left);
             ls = ans->right;
             strtofile(str2, TEMP_PATH);
@@ -347,6 +355,7 @@ void replace(char** sptr) {
     copyfile(path + 1, TEMP_PATH, ls, -1);
     clearfile(path + 1);
     copyfile(TEMP_PATH, path + 1, 0, -1);
+    return komak;
 }
 
 void grep(char** sptr, char* pipeString) {
@@ -434,18 +443,23 @@ void tree(char** sptr) {
     sscanf(ptr, "%d%n", &x, &k);
     ptr += k;
     *sptr = ptr;
-    printf("%d\n", x);
     if(x < 0){
-        puts("Wrong Depth!");
+        reterr("Wrong Depth!");
         return;
     }
     prtree(BASE, x, 0);
 }
 
-void autoindent(char** sptr) {
-    char *ptr = *sptr, path[FILE_PATH_SIZE];
-    getinstr(&ptr, path, 0);
-    *sptr = ptr;
+void autoindent(char** sptr, int wtf) {
+    char path[FILE_PATH_SIZE];
+    if(wtf) {
+        strcpy(path, "/");
+        strcat(path, OPEN_FILE);
+    } else{
+        char *ptr = *sptr;
+        getinstr(&ptr, path, 0);
+        *sptr = ptr;
+    }
     if(checkfile(path + 1)) {
         return;
     }

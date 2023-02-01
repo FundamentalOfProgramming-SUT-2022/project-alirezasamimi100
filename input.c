@@ -1,16 +1,19 @@
 #include "mainHeaders.h"
 
 
-int executeCommands() {
-    char command[MAX_COMMAND_SIZE], func[MAX_COMMAND_SIZE], output[MAX_STRING_SIZE];
-    fgets(command, MAX_COMMAND_SIZE, stdin);
+int executeCommands(char* command, char* path) {
+    char commandstr[MAX_COMMAND_SIZE], func[MAX_COMMAND_SIZE], output[MAX_STRING_SIZE];
+    if(!command) {
+        fgets(commandstr, MAX_COMMAND_SIZE, stdin);
+        command = commandstr;
+    }
     char *ptr = command, *pipe = NULL;
     while(1) {
         clearfile(OUTPUT);
         sscanf(ptr, "%s", func);
         ptr += strlen(func) + 1;
         if(!strcmp(func, "exit")) {
-            return 0;
+            return 1;
         } else if(!strcmp(func, "createfile")) {
             createfile(&ptr);
         } else if(!strcmp(func, "insertstr")) {
@@ -30,17 +33,35 @@ int executeCommands() {
         } else if(!strcmp(func, "find")) {
             find(&ptr, pipe);
         } else if(!strcmp(func, "replace")) {
-            replace(&ptr);
+            return 10 + replace(&ptr);
         } else if(!strcmp(func, "grep")) {
             grep(&ptr, pipe);
         } else if(!strcmp(func, "tree")) {
             tree(&ptr);
         } else if(!strcmp(func, "auto-indent")) {
-            autoindent(&ptr);
+            autoindent(&ptr, 0);
         } else if(!strcmp(func, "compare")) {
             compare(&ptr);
+        } else if(!strcmp(func, "open")) {
+            getinstr(&ptr, path, 0);
+            if(checkfile(path + 1)) {
+                path[0] = 0;
+                return 0;
+            }
+            return 2;
+        } else if(!strcmp(func, "save")) {
+            if(*path != '/') {
+                reterr("No Filename Specified!");
+            } else return 3;
+        } else if(!strcmp(func, "saveas")) {
+            getinstr(&ptr, path, 0);
+            if(checkfile(path + 1)) {
+                path[0] = 0;
+                return 0;
+            }
+            return 3;
         } else {
-            puts("Invalid Command!");
+            reterr("Invalid Command!");
         }
         while(*ptr == ' ') ++ptr;
         if(*ptr == '=' && *(ptr + 1) == 'D') {
@@ -49,8 +70,7 @@ int executeCommands() {
             pipe = output;
         }else break;
     }
-    printfile(OUTPUT);
-    return 1;
+    return 0;
 }
 
 struct wildcard* getinstr(char** sptr, char* str, int find) {

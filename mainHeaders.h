@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -15,6 +16,10 @@
 #define OUTPUT "root/.output"
 #define BASE "root"
 #define OPEN_FILE "root/.open"
+#define SLOPEN_FILE "/root/.open"
+#define CERO "root/.error"
+#define max(X,Y) (X > Y ? X : Y)
+#define min(X,Y) (X < Y ? X : Y)
 #define TABSIZE 4
 
 struct wildcard {
@@ -26,7 +31,7 @@ struct match {
     struct match* next;
 };
 
-int executeCommands();
+int executeCommands(char* command, char* path);
 struct wildcard* getinstr(char** sptr, char* str, int find);
 void createfile(char** sptr);
 void insertstr(char** sptr, char* pipeString);
@@ -52,11 +57,13 @@ void cut(char** sptr);
 void paste(char** sptr);
 struct match* findinfile(char path[], char ptrn[], struct wildcard* wcards, int del);
 void find(char** sptr, char* pipeString);
-void replace(char** sptr);
+int replace(char** sptr);
 void grep(char** sptr, char* pipeString);
 void tree(char** sptr);
 void prtree(char path[], int depth, int pre);
-void autoindent(char** sptr);
+void autoindent(char** sptr, int wtf);
 void compare(char** sptr);
 int getlinecount(char path[]);
 int getcharcount(char path[], int line);
+char getfilechar(char path[], int pos);
+void reterr(char *err);

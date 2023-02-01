@@ -101,13 +101,13 @@ int checkfile(char path[]) {
     DIR* dir = opendir(path);
     path[k] = '/';
     if(!dir) {
-        puts("Directory Doesn't Exist!");
+        reterr("Directory Doesn't Exist!");
         return 1;
     } else {
         closedir(dir);
         FILE* file = fopen(path, "r");
         if(!file) {
-            puts("File Doesn't Exist!");
+            reterr("File Doesn't Exist!");
             return 1;
         } else {
             fclose(file);
@@ -148,7 +148,7 @@ void restorebackup(char path[]) {
         fclose(file);
         rename(new, path);
     } else {
-        puts("No Actions To Undo!");
+        reterr("No Actions To Undo!");
         return;
     }
     for(int i = 0; i <= 8; i++) {
@@ -241,11 +241,15 @@ void prtree(char path[], int depth, int pre) {
     char *name = strrchr(path, '/');
     for(int i = 0; i < pre; i++) fputc('-', out);
     if(!name) {
-        fprintf(out, "%s:\n", path);
+        fprintf(out, "%s/\n", path);
     } else {
-        fprintf(out, "%s:\n", name + 1);
+        fprintf(out, "%s/\n", name + 1);
     }
-    if(!depth) return;
+    if(!depth) {
+        fclose(out);
+        closedir(dir);
+        return;
+    }
     while(file = readdir(dir)) {
         if(file->d_name[0] == '.') continue;
         if(file->d_type == DT_REG) {
@@ -267,7 +271,7 @@ void prtree(char path[], int depth, int pre) {
 
 int getlinecount(char path[]) {
     FILE* file = fopen(path, "r");
-    int ans = 0;
+    int ans = 1;
     char c;
     while((c = fgetc(file)) != EOF) {
         if(c == '\n') ++ans;
@@ -287,4 +291,19 @@ int getcharcount(char path[], int line) {
     }
     fclose(file);
     return ans;
+}
+
+char getfilechar(char path[], int pos) {
+    char ans = 0;
+    FILE* file = fopen(path, "r");
+    while(pos--) {
+        ans = fgetc(file);
+    }
+    fclose(file);
+    return ans;
+}
+
+void reterr(char* err) {
+    clearfile(CERO);
+    addtofile(CERO, err, 0);
 }
