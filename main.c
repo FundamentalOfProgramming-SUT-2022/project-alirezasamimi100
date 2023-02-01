@@ -190,6 +190,12 @@ int main() {
             case '=':
                 autoindent(NULL, 1);
                 break;
+            case 'r':
+                gofirst(rows - 2, columns);
+                break;
+            case 't':
+                goend(rows - 2, columns);
+                break;
             }
         } else if(mode == 1) {
             upd = 0;
@@ -253,6 +259,12 @@ int main() {
                 copyfile(OPEN_FILE, CLIPBOARD, min(pos, spos), max(pos, spos));
                 mode = 0;
                 spos = -1;
+                break;
+            case 'r':
+                gofirst(rows - 2, columns);
+                break;
+            case 't':
+                goend(rows - 2, columns);
                 break;
             }
         } else if(mode == 3) {
