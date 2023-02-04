@@ -1,5 +1,7 @@
 #include "mainHeaders.h"
 
+#define COF 4
+
 int spos = -1, pos, cury, curx, lr, lc;
 
 struct match *ffa = NULL, *fnow = NULL;
@@ -12,14 +14,14 @@ void printmf(int rows, int columns) {
     for(int i = 0; i < rows; i++) {
         move(i, 0);
         if(!fgets(str, MAX_STRING_SIZE, file)) {
-            printw("~\n");
+            printw("  ~\n");
             continue;
         }
         int sz = strlen(str);
-        printw("%d ", i + lr + 1);
+        printw("%3d ", i + lr + 1);
         int tj = getpos(OPEN_FILE, lr + i, 0);
         tj += lc;
-        for(int j = lc; j < sz && j < lc + columns - 2 && str[j] != '\n'; j++) {
+        for(int j = lc; j < sz && j < lc + columns - COF && str[j] != '\n'; j++) {
             if(ffa) {
                 while(wtf->left !=-1 && wtf->right <= tj) wtf = wtf->next;
             }
@@ -36,8 +38,8 @@ void printmf(int rows, int columns) {
 }
 
 void gol(int rows, int columns) {
-    if(curx + lc == 2) return;
-    if(lc && curx <= 6) {
+    if(curx -COF + lc == 0) return;
+    if(lc && curx - COF <= 4) {
         --lc;
     } else {
         --curx;
@@ -46,15 +48,15 @@ void gol(int rows, int columns) {
 
 void gor(int rows, int columns) {
     int sz = getcharcount(OPEN_FILE, cury + lr);
-    if(curx + lc - 2 == sz) return;
-    if(columns - curx <= 5 && sz + 3 - lc - columns > 0) ++lc;
+    if(curx - COF + lc == sz) return;
+    if(columns - curx <= 5 && sz + 1 - lc - (columns - COF) > 0) ++lc;
     else ++curx;
 }
 
 void gou(int rows, int columns) {
     if(cury + lr == 0) return;
     int sz = getcharcount(OPEN_FILE, cury + lr - 1);
-    while(curx + lc - 2 > sz) gol(rows, columns);
+    while(curx - COF + lc > sz) gol(rows, columns);
     if(lr && cury <= 4) {
         --lr;
     } else {
@@ -66,13 +68,13 @@ void god(int rows, int columns) {
     int sz = getlinecount(OPEN_FILE);
     if(cury + lr + 1 == sz) return;
     int st = getcharcount(OPEN_FILE, cury + lr + 1);
-    while(curx + lc - 2 > st) gol(rows, columns);
+    while(curx - COF + lc > st) gol(rows, columns);
     if(rows - cury <= 5 && sz - lr - rows > 0) ++lr;
     else ++cury;
 }
 
 void gofirst(int rows, int columns) {
-    curx = 2;
+    curx = COF;
     cury = lc = lr = 0;
 }
 
@@ -121,10 +123,10 @@ int main() {
     getmaxyx(stdscr, rows, columns);
     clearfile(OPEN_FILE);
     clearfile(CLIPBOARD);
-    curx = 2;
+    curx = COF;
     cury = lr = lc = 0;
     while(1) {
-        pos = getpos(OPEN_FILE, cury + lr, curx + lc - 2);
+        pos = getpos(OPEN_FILE, cury + lr, curx - COF + lc);
         clearfile(CERO);
         printmf(rows - 2, columns);
         if(path[0]) {
@@ -202,7 +204,7 @@ int main() {
             switch (key){
             case KEY_BACKSPACE:
                 if(pos) {
-                    if(lc + curx > 2) {
+                    if(lc + curx > COF) {
                         gol(rows - 2, columns);
                     } else {
                         gou(rows - 2, columns);
@@ -222,7 +224,7 @@ int main() {
                 createbackup(OPEN_FILE);
                 addtofile(OPEN_FILE, wtf, pos);
                 if(key == '\n') {
-                    while(lc + curx > 2) gol(rows - 2, columns);
+                    while(lc + curx > COF) gol(rows - 2, columns);
                     god(rows - 2, columns);
                 } else {
                     gor(rows - 2, columns);
