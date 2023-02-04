@@ -289,8 +289,8 @@ int main() {
                     endwin();
                     return 0;
                 }
+                if(k == 3) strcpy(ptpy, path);
                 if(ptpy[0] && (k >= 2 || getcharcount(OUTPUT, 0))) {
-                    if(k == 3) strcpy(ptpy, path);
                     upd = 1;
                     clearfile(ptpy + 1);
                     copyfile(OPEN_FILE, ptpy + 1, 0, -1);

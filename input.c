@@ -43,9 +43,11 @@ int executeCommands(char* command, char* path) {
         } else if(!strcmp(func, "compare")) {
             compare(&ptr);
         } else if(!strcmp(func, "open")) {
+            char tmp[FILE_PATH_SIZE];
+            strcpy(tmp, path);
             getinstr(&ptr, path, 0);
             if(checkfile(path + 1)) {
-                path[0] = 0;
+                strcpy(path, tmp);
                 return 0;
             }
             return 2;
@@ -54,9 +56,11 @@ int executeCommands(char* command, char* path) {
                 reterr("No Filename Specified!");
             } else return 3;
         } else if(!strcmp(func, "saveas")) {
+            char tmp[FILE_PATH_SIZE];
+            strcpy(tmp, path);
             getinstr(&ptr, path, 0);
             if(checkfile(path + 1)) {
-                path[0] = 0;
+                strcpy(path, tmp);
                 return 0;
             }
             return 3;
