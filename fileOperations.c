@@ -46,10 +46,14 @@ int getpos(char path[], int line, int pos) {
     char c;
     for(int i = 0; ; i++) {
         if(ln == line && ls == pos) {
+            fclose(file);
             return i;
         }
         c = fgetc(file);
-        if(c == EOF) return i;
+        if(c == EOF) {
+            fclose(file);
+            return i;
+        }
         ls++;
         if(c == '\n') ++ln, ls = 0;
     }

@@ -90,7 +90,7 @@ struct wildcard* getinstr(char** sptr, char* str, int find) {
     int mode = 0, bs = 0;
     if(*ptr == '\"') mode = 1, ++ptr;
     int i = 0;
-    while(*ptr != end[mode] && *ptr != '\n' && *ptr != '\0') {
+    while((bs || *ptr != end[mode]) && *ptr != '\n' && *ptr != '\0') {
         if(bs) {
             bs = 0;
             if(*ptr == 'n') {
